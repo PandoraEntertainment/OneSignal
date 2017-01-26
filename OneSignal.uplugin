@@ -1,0 +1,23 @@
+{
+	"FileVersion": 1,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "OneSignal",
+	"Description": "This plugin enables Push Notifications through OneSignal service.",
+	"Category": "Push Notifications",
+	"CreatedBy": "Pandora Entertainment Ltd.",
+	"CreatedByURL": "www.pandoraentertainment.co.uk",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"Modules": [
+		{
+			"Name": "OneSignal",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"EnabledByDefault": false,
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"Installed": false
+}

@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--OneSignal plugin additions-->
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- init section is always evaluated once per architecture -->
+	<trace enable="true"/>
+	<init>
+		<log text="OneSignal init"/>		
+	</init>
+
+  <androidManifestUpdates>
+    <addElements tag="application">
+      <!-- Application tag requirements below for OneSignal -->
+      <!-- ##START## OneSignal -->
+      <meta-data android:name="com.google.android.gms.version"
+         android:value="@integer/google_play_services_version" />
+
+      <!-- TODO: Please update the OneSignal ID below to yours! -->
+      <meta-data android:name="onesignal_app_id"
+         android:value="" />
+       
+	  <!-- TODO: Please update the Package Name below to yours! --> 
+      <receiver
+          android:name="com.onesignal.GcmBroadcastReceiver"
+          android:permission="com.google.android.c2dm.permission.SEND" >
+        <intent-filter>
+          <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+          <category android:name="" />
+        </intent-filter>
+      </receiver>
+
+      <receiver android:name="com.onesignal.NotificationOpenedReceiver" />
+      <service android:name="com.onesignal.GcmIntentService" />
+      <service android:name="com.onesignal.SyncService" android:stopWithTask="false" />
+      <activity android:name="com.onesignal.PermissionsActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+      <service android:name="com.onesignal.NotificationRestoreService" />
+      <receiver android:name="com.onesignal.BootUpReceiver">
+        <intent-filter>
+          <action android:name="android.intent.action.BOOT_COMPLETED" />
+          <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+        </intent-filter>
+      </receiver>
+      <receiver android:name="com.onesignal.UpgradeReceiver" >
+        <intent-filter>
+          <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+        </intent-filter>
+      </receiver>
+
+      <!-- ##END## OneSignal -->
+
+    </addElements>
+
+    <!-- ##START## OneSignal Permissions -->
+    
+    <!-- INTERNET and c2dm RECEIVE are basic requirements for push messages from Google. -->
+    <addPermission android:name="android.permission.INTERNET" />
+    <addPermission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <!-- Create a unique permission for your app and use it so only your app can receive your OneSignal messages. -->
+    <setStringFromAttribute result="packageName" tag="manifest" name="package"/>
+
+    <setElement result="c2dPermission" value="permission"/>
+    <addAttribute tag="$c2dPermission" name="android:name" value="$S(packageName).permission.C2D_MESSAGE"/>
+    <addAttribute tag="$c2dPermission" name="android:protectionLevel" value="signature"/>
+    <addElement tag="manifest" name="c2dPermission"/>
+
+    <setElement result="c2dUses" value="uses-permission"/>
+    <addAttribute tag="$c2dUses" name="android:name" value="$S(packageName).permission.C2D_MESSAGE"/>
+    <addElement tag="manifest" name="c2dUses"/>
+
+
+    <!-- Required, makes sure notifications are delivered on time. -->
+    <addPermission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Required so the device vibrates on receiving a push notification.
+    	 Vibration settings of the device still apply. -->
+    <addPermission android:name="android.permission.VIBRATE" />
+
+    <addPermission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <addPermission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- START: ShortcutBadger -->
+    <!-- Samsung -->
+    <addPermission android:name="com.sec.android.provider.badge.permission.READ"/>
+    <addPermission android:name="com.sec.android.provider.badge.permission.WRITE"/>
+
+    <!-- HTC -->
+    <addPermission android:name="com.htc.launcher.permission.READ_SETTINGS"/>
+    <addPermission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT"/>
+
+    <!-- Sony -->
+    <addPermission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE"/>
+    <addPermission android:name="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"/>
+
+    <!-- Apex -->
+    <addPermission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
+
+    <!-- Solid -->
+    <addPermission android:name="com.majeur.launcher.permission.UPDATE_BADGE"/>
+
+    <!-- Huawei -->
+    <addPermission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE" />
+    <addPermission android:name="com.huawei.android.launcher.permission.READ_SETTINGS" />
+    <addPermission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS" />
+    <!-- End: ShortcutBadger -->
+
+
+    <!-- ##END## OneSignal Permissions -->
+    
+  </androidManifestUpdates>
+
+  <!-- optional additions to proguard -->
+  <proguardAdditions>
+    <insert>
+      -dontwarn com.onesignal.**
+
+      -keep class com.google.android.gms.common.api.GoogleApiClient {
+      void connect();
+      void disconnect();
+      }
+      -keep public interface android.app.OnActivityPausedListener {*;}
+
+      -keep class com.onesignal.shortcutbadger.impl.AdwHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.ApexHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.AsusHomeLauncher { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.DefaultBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.HuaweiHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.NewHtcHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.NovaHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.SolidHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.SonyHomeBadger { &lt;init&gt;(...); }
+      -keep class com.onesignal.shortcutbadger.impl.XiaomiHomeBadger { &lt;init&gt;(...); }
+    </insert>
+  </proguardAdditions>
+
+  <!-- optional files or directories to copy to Intermediate/Android/APK -->
+  <resourceCopies>
+    <copyFile src="$S(PluginDir)/../../lib/Android/OneSignalSDK-3.4.1.jar" dst="$S(BuildDir)/libs/OneSignalSDK-3.4.1.jar" />
+	<copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-mdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/res/drawable-mdpi/ic_stat_onesignal_default.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-hdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/res/drawable-hdpi/ic_stat_onesignal_default.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-xhdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/res/drawable-xhdpi/ic_stat_onesignal_default.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-xxhdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/res/drawable-xxhdpi/ic_stat_onesignal_default.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-xxxhdpi/ic_onesignal_large_icon_default.png" dst="$S(BuildDir)/res/drawable-xxxhdpi/ic_onesignal_large_icon_default.png" />
+	
+	<copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-mdpi/ic_launcher.png" dst="$S(BuildDir)/res/drawable-mdpi/ic_launcher.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-hdpi/ic_launcher.png" dst="$S(BuildDir)/res/drawable-hdpi/ic_launcher.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-xhdpi/ic_launcher.png" dst="$S(BuildDir)/res/drawable-xhdpi/ic_launcher.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-xxhdpi/ic_launcher.png" dst="$S(BuildDir)/res/drawable-xxhdpi/ic_launcher.png" />
+    <copyFile src="$S(PluginDir)/../../lib/Android/res/drawable-xxxhdpi/ic_launcher.png" dst="$S(BuildDir)/res/drawable-xxxhdpi/ic_launcher.png" />
+  </resourceCopies>
+  
+  <prebuildCopies>
+    <!--<copyDir src="$S(PluginDir)/../../lib/Android/res/drawable-mdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/libs/res/drawable-mdpi/ic_stat_onesignal_default.png" />
+    <copyDir src="$S(PluginDir)/../../lib/Android/res/drawable-hdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/libs/res/drawable-mdpi/ic_stat_onesignal_default.png" />
+    <copyDir src="$S(PluginDir)/../../lib/Android/res/drawable-xhdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/libs/res/drawable-mdpi/ic_stat_onesignal_default.png" />
+    <copyDir src="$S(PluginDir)/../../lib/Android/res/drawable-xxhdpi/ic_stat_onesignal_default.png" dst="$S(BuildDir)/libs/res/drawable-mdpi/ic_stat_onesignal_default.png" />-->
+    <copyDir src="$S(PluginDir)/../../lib/Android/res/drawable-xxxhdpi/ic_onesignal_large_icon_default.png" dst="$S(BuildDir)/res/drawable-mdpi/ic_onesignal_large_icon_default.png" />	
+  </prebuildCopies>
+
+  <AARImports>
+    <insertValue value="repository $(ENGINEDIR)/Source/ThirdParty/Android/extras"/>
+    <insertNewline/>
+    <insert>com.google.android.gms,play-services-gcm,9.2.0</insert>
+    <insertNewline/>
+  </AARImports>
+
+  <!-- optional additions to the GameActivity imports in GameActivity.java -->
+  <gameActivityImportAdditions>
+    <insert>
+
+      import com.onesignal.OneSignal;
+      import com.onesignal.OneSignal.IdsAvailableHandler;
+      import com.onesignal.OSNotificationAction;
+      import com.onesignal.OSNotificationOpenResult;
+      import com.onesignal.OSNotificationReceivedResult;
+      import com.onesignal.OSNotification;
+
+      import org.json.JSONObject;
+
+    </insert>
+  </gameActivityImportAdditions>
+
+
+  <!-- optional additions to the GameActivity class in GameActivity.java -->
+  <gameActivityClassAdditions>
+    <insert>
+      
+      private String sUserId= "/";
+      
+      private class ExampleNotificationOpenedHandler implements OneSignal.NotificationOpenedHandler {
+      // This fires when a notification is opened by tapping on it.
+      @Override
+      public void notificationOpened(OSNotificationOpenResult result) {
+      OSNotificationAction.ActionType actionType = result.action.type;
+      JSONObject data = result.notification.payload.additionalData;
+      String customKey;
+      }
+      }
+      
+      private class ExampleNotificationReceivedHandler implements OneSignal.NotificationReceivedHandler {
+      @Override
+      public void notificationReceived(OSNotification notification) {
+      JSONObject data = notification.payload.additionalData;
+      String customKey;
+	  
+	  if (data != null) {
+      customKey = data.optString("New Game", null);
+      if (customKey != null){
+      nativeOneSignalNotificationReceived(customKey);
+        Log.debug("OneSignalExample" + "/" + "customkey set with value: " + customKey);
+		}
+	  }
+	  
+      }
+      }
+      
+      private void SetUserId(String UserId){
+      sUserId = UserId;
+      
+      }
+      
+      public native void nativeOneSignalNotificationOpened();
+      public native void nativeOneSignalNotificationReceived(String CustomKeyValue);
+      public native void nativeOneSignalIdsAvailable(String UserId );
+      //public native void nativeOneSignalIdsAvailable(String UserId, String RegistrationId );
+
+    </insert>
+  </gameActivityClassAdditions>
+
+  <!-- optional additions to GameActivity onCreate metadata reading in GameActivity.java -->
+  <gameActivityReadMetadataAdditions>
+    <insert>
+      // Logging set to help debug issues, remove before releasing your app.
+      //OneSignal.setLogLevel(OneSignal.LOG_LEVEL.DEBUG, OneSignal.LOG_LEVEL.WARN);
+
+      OneSignal.startInit(this)
+      .setNotificationOpenedHandler(new ExampleNotificationOpenedHandler())
+      .setNotificationReceivedHandler(new ExampleNotificationReceivedHandler())
+      .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.None)
+      .init();
+      Log.debug("OneSignal.startInit(this)");
+	  
+	  OneSignal.idsAvailable(new IdsAvailableHandler() {
+      @Override
+      public void idsAvailable(String userId, String registrationId) {
+      SetUserId(userId);
+      //nativeOneSignalIdsAvailable(userId);
+        Log.debug("debug" + " " + "User:" + sUserId);
+        Log.debug("debug" + " " + "User:" + userId);
+        if (registrationId != null){
+        //nativeOneSignalIdsAvailable(userId, registrationId );
+             Log.debug("debug" + " " + "registrationId:" + registrationId);
+  
+        }
+		}
+     });
+
+    </insert>
+  </gameActivityReadMetadataAdditions>
+
+  <!-- optional additions to GameActivity onCreate in GameActivity.java -->
+  <gameActivityOnCreateAdditions>
+    <insert>
+
+    </insert>
+  </gameActivityOnCreateAdditions>
+
+  <!-- optional additions to GameActivity onDestroy in GameActivity.java -->
+  <gameActivityOnDestroyAdditions>
+    <insert>
+
+    </insert>
+  </gameActivityOnDestroyAdditions>
+
+
+  <!-- optional additions to GameActivity onStart in GameActivity.java -->
+  <gameActivityOnStartAdditions>
+    <insert>
+
+    </insert>
+  </gameActivityOnStartAdditions>
+
+  <!-- optional additions to GameActivity onStop in GameActivity.java -->
+  <gameActivityOnStopAdditions>
+    <insert>
+
+    </insert>
+  </gameActivityOnStopAdditions>
+
+
+  <!-- optional additions to GameActivity onPause in GameActivity.java	-->
+  <gameActivityOnPauseAdditions>
+    <insert>
+
+    </insert>
+  </gameActivityOnPauseAdditions>
+
+
+  <!-- optional additions to GameActivity onResume in GameActivity.java	-->
+  <gameActivityOnResumeAdditions>
+    <insert>
+
+    </insert>
+  </gameActivityOnResumeAdditions>
+
+
+  <!-- optional additions to GameActivity onActivityResult in GameActivity.java -->
+  <gameActivityOnActivityResultAdditions>
+  </gameActivityOnActivityResultAdditions>
+
+
+  <!-- optional libraries to load in GameActivity.java before libUE4.so -->
+  <soLoadLibrary>
+    <!-- need this if plugin enabled and supported architecture, even if not packaged for GearVR -->
+    <!-- 	<if condition="bSupported">
+			<true>
+				<loadLibrary name="vrapi" failmsg="GearVR library not loaded and required!" />
+			</true>
+		</if> -->
+  </soLoadLibrary>
+  
+</root>
